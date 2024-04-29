@@ -5,20 +5,81 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import get_object_or_404, redirect, render, reverse
 from django.utils import timezone
 from django.views import generic
+from django.views.decorators.csrf import csrf_exempt
 # from paypal.standard.forms import PayPalPaymentsForm
 
 
-from .forms import CheckoutForm
-from .models import ProdukItem, OrderProdukItem, Order, AlamatPengiriman, Payment
+from .forms import CheckoutForm, ProdukReviewForm
+from .models import ProdukItem, OrderProdukItem, Order, AlamatPengiriman, Payment, ProdukImages
+
+def KategoriListView(req, kategori):
+    _mapKategori = {
+        'Shirt': 'S',
+        'Sportwear':'SW',
+        'Outwear':'OW'
+    }
+    print(kategori)
+    if (kategori == 'semua'):
+        produk = ProdukItem.objects.all()
+    else:
+        produk = ProdukItem.objects.filter(kategori = _mapKategori[kategori])
+    paginate_by = 4
+    context = {
+        'items' : produk,
+        'kategori' : kategori,
+    }
+    return render(req, 'produk.html', context)
+
 
 class HomeListView(generic.ListView):
     template_name = 'home.html'
     queryset = ProdukItem.objects.all()
     paginate_by = 8
 
+# def HomeListView(req):
+#     # template_name = "home.html"
+#     produk = ProdukItem.objects.all()
+#     best = ProdukItem.objects.filter(label = 'BEST')
+#     new = ProdukItem.objects.filter(label = 'NEW')
+#     sale = ProdukItem.objects.filter(label = 'SALE')
+#     context = {
+#         'all' : produk,
+#         'best': best,
+#         'sale' : sale,
+#         'new' : new,
+#     }
+#     paginate_by = 8
+#     return render(req, "home.html", context)
+
 class ProductDetailView(generic.DetailView):
     template_name = 'product_detail.html'
     queryset = ProdukItem.objects.all()
+
+class ProductDetailView(LoginRequiredMixin, generic.DetailView):
+    template_name = "product_detail.html"
+    queryset = ProdukItem.objects.all()
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['review_form'] = ProdukReviewForm()
+        context['reviews'] = self.object.reviews.all()
+        context['p_images'] = ProdukImages.objects.filter(produk=self.object)
+        return context
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        form = ProdukReviewForm(request.POST)
+        if form.is_valid():
+            review = form.save(commit=False)
+            review.user = request.user
+            review.produk = self.object
+            review.save()
+            messages.success(request, "Ulasan berhasil ditambahkan")
+        else:
+            messages.error(request, "Gagal menambahkan ulasan")
+        return redirect(request.path)
+    def handle_no_permission(self):
+        return redirect("/accounts/login/?next=" + self.request.path)
+    
+
 
 class CheckoutView(LoginRequiredMixin, generic.FormView):
     def get(self, *args, **kwargs):
@@ -99,9 +160,9 @@ class CheckoutView(LoginRequiredMixin, generic.FormView):
 #                 'is_paypal': isPaypal,
 #             }
 #             return render(self.request, template_name, context)
-
-        except ObjectDoesNotExist:
-            return redirect('toko:checkout')
+# 
+        # except ObjectDoesNotExist:
+        #     return redirect('toko:checkout')
 
 class OrderSummaryView(LoginRequiredMixin, generic.TemplateView):
     def get(self, *args, **kwargs):
@@ -130,54 +191,124 @@ def add_to_cart(request, slug):
             if order.produk_items.filter(produk_item__slug=produk_item.slug).exists():
                 order_produk_item.quantity += 1
                 order_produk_item.save()
-                pesan = f"ProdukItem sudah diupdate menjadi: { order_produk_item.quantity }"
+                pesan = f"Produkmu sudah diupdate menjadi: { order_produk_item.quantity }"
                 messages.info(request, pesan)
                 return redirect('toko:produk-detail', slug = slug)
             else:
                 order.produk_items.add(order_produk_item)
-                messages.info(request, 'ProdukItem pilihanmu sudah ditambahkan')
+                messages.info(request, 'Produk pilihanmu sudah ditambahkan')
                 return redirect('toko:produk-detail', slug = slug)
         else:
             tanggal_order = timezone.now()
             order = Order.objects.create(user=request.user, tanggal_order=tanggal_order)
             order.produk_items.add(order_produk_item)
-            messages.info(request, 'ProdukItem pilihanmu sudah ditambahkan')
+            messages.info(request, 'Produk pilihanmu sudah ditambahkan')
             return redirect('toko:produk-detail', slug = slug)
     else:
         return redirect('/accounts/login')
 
+# def remove_from_cart(request, slug):
+#     if request.user.is_authenticated:
+#         produk_item = get_object_or_404(ProdukItem, slug=slug)
+#         order_query = Order.objects.filter(
+#             user=request.user, ordered=False
+#         )
+#         if order_query.exists():
+#             order = order_query[0]
+#             if order.produk_items.filter(produk_item__slug=produk_item.slug).exists():
+#                 try: 
+#                     order_produk_item = OrderProdukItem.objects.filter(
+#                         produk_item=produk_item,
+#                         user=request.user,
+#                         ordered=False
+#                     )[0]
+                    
+#                     order.produk_items.remove(order_produk_item)
+#                     order_produk_item.delete()
+
+#                     pesan = f"Produkmu sudah dihapus semuanya"
+#                     messages.info(request, pesan)
+#                     return redirect('toko:produk-detail',slug = slug)
+#                 except ObjectDoesNotExist:
+#                     print('Error: order ProdukItem sudah tidak ada')
+#             else:
+#                 messages.info(request, 'Kamu belum menambahkan produk ini')
+#                 return redirect('toko:produk-detail',slug = slug)
+#         else:
+#             messages.info(request, 'Produkmu tidak ada order yang aktif')
+#             return redirect('toko:produk-detail',slug = slug)
+#     else:
+#         return redirect('/accounts/login')
+    
+
+# def remove_single_item_from_cart(request, slug):
+#     if request.user.is_authenticated:
+#         produk_item = get_object_or_404(ProdukItem, slug=slug)
+#         order_query = Order.objects.filter(user=request.user, ordered=False)
+#         if order_query.exists():
+#             order = order_query[0]
+#             if order.produk_items.filter(produk_item__slug=produk_item.slug).exists():
+#                 try:
+#                     order_produk_item = OrderProdukItem.objects.filter(
+#                         produk_item=produk_item, user=request.user, ordered=False
+#                     ).first()  # Use first() instead of [0]
+#                     if order_produk_item.quantity > 1:
+#                         order_produk_item.quantity -= 1
+#                         order_produk_item.save()
+#                         pesan = f"Produkmu sudah dikurangi. Jumlah saat ini: {order_produk_item.quantity}"
+#                     else:
+#                         order.produk_items.remove(order_produk_item)
+#                         pesan = "Produk ini sudah dihapus dari keranjang."
+
+#                     messages.info(request, pesan)
+#                     return redirect("toko:order-summary")
+#                 except ObjectDoesNotExist:
+#                     order.produk_items.remove(order_produk_item)
+#                     print("Error: order ProdukItem sudah tidak ada")
+#             else:
+#                 messages.info(request, "Produk ini tidak ada")
+#                 return redirect("toko:order-summary")
+#         else:
+#             messages.info(request, "Produk tidak ada order yang aktif")
+#             return redirect("toko:order-summary", slug=slug)
+#     else:
+#         return redirect("/accounts/login")
+
 def remove_from_cart(request, slug):
     if request.user.is_authenticated:
         produk_item = get_object_or_404(ProdukItem, slug=slug)
-        order_query = Order.objects.filter(
-            user=request.user, ordered=False
-        )
+        order_query = Order.objects.filter(user=request.user, ordered=False)
         if order_query.exists():
             order = order_query[0]
             if order.produk_items.filter(produk_item__slug=produk_item.slug).exists():
-                try: 
+                try:
                     order_produk_item = OrderProdukItem.objects.filter(
-                        produk_item=produk_item,
-                        user=request.user,
-                        ordered=False
-                    )[0]
-                    
-                    order.produk_items.remove(order_produk_item)
-                    order_produk_item.delete()
+                        produk_item=produk_item, user=request.user, ordered=False
+                    ).first()
+                    if order_produk_item.quantity > 1:
+                        order_produk_item.quantity -= 1
+                        order_produk_item.save()
+                        pesan = f"Produkmu sudah dikurangi. Jumlah saat ini: {order_produk_item.quantity}"
 
-                    pesan = f"ProdukItem sudah dihapus"
+                    else:
+                        order.produk_items.remove(order_produk_item)
+                        pesan = "Produk ini sudah dihapus dari keranjang."
+
                     messages.info(request, pesan)
-                    return redirect('toko:produk-detail',slug = slug)
+                    return redirect("toko:order-summary")
                 except ObjectDoesNotExist:
-                    print('Error: order ProdukItem sudah tidak ada')
+                    order.produk_items.remove(order_produk_item)
+                    print("Error: order Produk ini sudah tidak ada")
             else:
-                messages.info(request, 'ProdukItem tidak ada')
-                return redirect('toko:produk-detail',slug = slug)
+                messages.info(request, "Produkmu tidak ada")
+                return redirect("toko:produk-detail", slug=slug)
         else:
-            messages.info(request, 'ProdukItem tidak ada order yang aktif')
-            return redirect('toko:produk-detail',slug = slug)
+            messages.info(request, "ProdukItem tidak ada order yang aktif")
+            return redirect("toko:produk-detail", slug=slug)
     else:
-        return redirect('/accounts/login')
+        return redirect("/accounts/login")
+
+
 
 # @csrf_exempt
 def paypal_return(request):

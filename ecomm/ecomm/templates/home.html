@@ -1,11 +1,34 @@
 {% extends 'base.html' %}
 
+{% load humanize %} 
+
 {% block content %}
 
 {% include 'carousel.html' %}
 
 <!--Main layout-->
 <main>
+  <!-- <div class="container w-100">
+    <div class="my-5 py-3">
+      <h1 class="text-center">
+          Jelajahi beragam <i>kategori</i> kami
+      </h2>
+      <div class="d-flex categories justify-content-center">
+        <div class="rounded-pill m-2 px-3 py-2">
+          <a href="#">Pakaian</a>
+        </div>
+        <div class="rounded-pill m-2 px-3 py-2">
+          <a href="#">Tas</a>
+        </div>
+        <div class="rounded-pill m-2 px-3 py-2">
+          <a href="#">Sepatu</a>
+        </div>
+        <div class="rounded-pill m-2 px-3 py-2">
+          <a href="#">Aksesoris</a>
+        </div>
+      </div>  
+    </div> -->
+
     <div class="container">
         <!-- Navbar -->
         <nav class="navbar navbar-expand-lg navbar-dark mt-3 mb-5 shadow p-2" style="background-color: #607D8B">
@@ -65,15 +88,23 @@
                 
                 {% for pItem in object_list %}
                 <div class="col-lg-3 col-md-6 mb-4">
-                  <div class="card">
+                  <div class="card mb-4 h-100 d-flex">
                     <div class="bg-image hover-zoom ripple ripple-surface ripple-surface-light"
                       data-mdb-ripple-color="light">
-                      <img src="{{ pItem.gambar.url }}"
-                        class="w-100" />
+                      <img src="{{ pItem.gambar.url }}"class="card-img card-img-top" style="width:100%;height: 30vh; object-fit:contain;"/>
+                        <!--class="w-100" -->
                       <a href="{{ pItem.get_absolute_url }}"> 
                         <div class="mask">
                           <div class="d-flex justify-content-start align-items-end h-100">
-                            <h5><span class="badge bg-{{ pItem.get_label_display }} ms-2">{{ pItem.label }}</span></h5>
+                            <h5>
+                              <!-- <span class="badge bg-{{ pItem.get_label_display }} ms-2">{{ pItem.label }}</span></h5>       -->
+                              {% if pItem.label == 'NEW'%}
+                                <span class="badge badge-info ms-2">{{ pItem.label }}</span></h5>
+                              {% elif pItem.label == 'SALE' %}
+                                <span class="badge badge-danger ms-2">{{ pItem.label }}</span></h5>
+                              {% elif pItem.label != '' %}
+                                <span class="badge badge-warning ms-2">{{ pItem.label }}</span></h5>
+                              {% endif %}                        
                           </div>
                         </div>
                         <div class="hover-overlay">
@@ -88,7 +119,7 @@
                       <a href="" class="text-reset ">
                         <p>{{ pItem.get_kategori_display }}</p>
                       </a>
-                      <h6 class="mb-3 price">Rp {% if pItem.harga_diskon %}{{ pItem.harga_diskon }}{% else %}{{ pItem.harga }}{% endif %}</h6>
+                      <h6 class="mb-3 price">Rp {% if pItem.harga_diskon %}{{ pItem.harga_diskon|floatformat:"g"|intcomma:"."}},-{% else %}{{ pItem.harga|floatformat:"g"|intcomma:"."}},-{% endif %}</h6>
                     </div>
                   </div>
                 </div>

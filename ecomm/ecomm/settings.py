@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.sites',
+    'django.contrib.humanize',
 
     'allauth',
     'allauth.account',
@@ -161,6 +162,9 @@ USE_I18N = True
 
 USE_TZ = True
 
+DECIMAL_SEPARATOR = ','
+THOUSAND_SEPARATOR = '.'
+
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 CRISPY_TEMPLATE_PACK = "bootstrap5"
 
@@ -224,3 +228,4 @@ if DEBUG is False:
     # PAYPAL_SECRET_ID = env('PAYPAL_LIVE_SECRET_ID')
     # PAYPAL_TEST=False
     # PAYPAL_RECEIVER_EMAIL = env('PAYPAL_RECEIVER_EMAIL')
+

@@ -2,22 +2,31 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import models
 from django.urls import reverse
+import datetime
 
 PILIHAN_KATEGORI = (
     ('S', 'Shirt'),
-    ('SW', 'Sport wear'),
+    ('SW', 'Sportwear'),
     ('OW', 'Outwear')
 )
 
 PILIHAN_LABEL = (
-    ('NEW', 'Baru'),
-    ('SALE', 'Disc'),
-    ('BEST', 'Jempol'),
+    ('NEW', 'primary'),
+    ('SALE', 'info'),
+    ('BEST', 'danger'),
 )
 
 PILIHAN_PEMBAYARAN = (
     ('P', 'Paypal'),
     ('S', 'Stripe'),
+)
+
+PILIHAN_RATING = (
+    ('1', '1'),
+    ('2', '2'),
+    ('3', '3'),
+    ('4', '4'),
+    ('5', '5'),
 )
 
 User = get_user_model()
@@ -29,11 +38,15 @@ class ProdukItem(models.Model):
     slug = models.SlugField(unique=True)
     deskripsi = models.TextField()
     gambar = models.ImageField(upload_to='product_pics')
-    label = models.CharField(choices=PILIHAN_LABEL, max_length=4)
-    kategori = models.CharField(choices=PILIHAN_KATEGORI, max_length=2)
+    label = models.CharField(choices=PILIHAN_LABEL, max_length=11)
+    kategori = models.CharField(choices=PILIHAN_KATEGORI, max_length=9)
+    # detail_produk = models.TextField(null=True)
+
+    def pid(self):
+        return self.id
 
     def __str__(self):
-        return f"{self.nama_produk} - Rp {self.harga}"
+        return f"{self.nama_produk} - Rp {self.harga},-"
 
     def get_absolute_url(self):
         return reverse("toko:produk-detail", kwargs={
@@ -50,6 +63,19 @@ class ProdukItem(models.Model):
             "slug": self.slug
             })
     
+    def get_remove_single_item_from_cart_url(self):
+        return reverse("toko:remove-single-item-from-cart", kwargs={
+            "slug": self.slug
+            })
+    
+class ProdukImages(models.Model):
+    produk = models.ForeignKey(ProdukItem, related_name="p_images", on_delete=models.SET_NULL, null=True)
+    images = models.ImageField(upload_to='product-images',default="produk.jpg")
+    class Meta :
+        verbose_name_plural =  "Gambar Produk"
+    def __str__(self):
+        return f"Gambar Produk {self.produk}"
+
 class OrderProdukItem(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     ordered = models.BooleanField(default=False)
@@ -77,8 +103,31 @@ class OrderProdukItem(models.Model):
         if self.produk_item.harga_diskon:
             return self.get_total_hemat_item()
         return 0
-
-
+ #--------------------------------------------------------------------------baru DARI SINI---------------------
+class ProdukReview(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    produk = models.ForeignKey(ProdukItem, on_delete=models.CASCADE, related_name='reviews')
+    nama = models.CharField(max_length=50)
+    komentar = models.TextField()
+    publish = models.DateTimeField(default=datetime.datetime.now)
+    status = models.BooleanField(default=True)
+    rating = models.CharField(choices=PILIHAN_RATING, max_length=2)
+    class Meta:
+        ordering = ("publish",)
+    def __str__(self):
+        return f"Ulasan oleh {self.nama}"
+    
+class Kontak(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    nama = models.CharField(max_length=100)
+    email = models.EmailField()
+    pesan = models.TextField()
+    tanggal = models.DateTimeField(auto_now_add=True)
+    def __str__(self):
+        return self.nama
+    class Meta:
+        verbose_name_plural = "Kontak"
+  #--------------------------------------------------------------------------baru SAMPAI SINI---------------------
 class Order(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     produk_items = models.ManyToManyField(OrderProdukItem)
