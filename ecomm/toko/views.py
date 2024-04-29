@@ -5,7 +5,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import get_object_or_404, redirect, render, reverse
 from django.utils import timezone
 from django.views import generic
-from paypal.standard.forms import PayPalPaymentsForm
+# from paypal.standard.forms import PayPalPaymentsForm
 
 
 from .forms import CheckoutForm
@@ -14,7 +14,7 @@ from .models import ProdukItem, OrderProdukItem, Order, AlamatPengiriman, Paymen
 class HomeListView(generic.ListView):
     template_name = 'home.html'
     queryset = ProdukItem.objects.all()
-    paginate_by = 4
+    paginate_by = 8
 
 class ProductDetailView(generic.DetailView):
     template_name = 'product_detail.html'
@@ -72,33 +72,33 @@ class CheckoutView(LoginRequiredMixin, generic.FormView):
             messages.error(self.request, 'Tidak ada pesanan yang aktif')
             return redirect('toko:order-summary')
 
-class PaymentView(LoginRequiredMixin, generic.FormView):
-    def get(self, *args, **kwargs):
-        template_name = 'payment.html'
-        try:
-            order = Order.objects.get(user=self.request.user, ordered=False)
+# class PaymentView(LoginRequiredMixin, generic.FormView):
+#     def get(self, *args, **kwargs):
+#         template_name = 'payment.html'
+#         try:
+#             order = Order.objects.get(user=self.request.user, ordered=False)
             
-            paypal_data = {
-                'business': settings.PAYPAL_RECEIVER_EMAIL,
-                'amount': order.get_total_harga_order,
-                'item_name': f'Pembayaran belajanan order: {order.id}',
-                'invoice': f'{order.id}-{timezone.now().timestamp()}' ,
-                'currency_code': 'USD',
-                'notify_url': self.request.build_absolute_uri(reverse('paypal-ipn')),
-                'return_url': self.request.build_absolute_uri(reverse('toko:paypal-return')),
-                'cancel_return': self.request.build_absolute_uri(reverse('toko:paypal-cancel')),
-            }
+#             paypal_data = {
+#                 'business': settings.PAYPAL_RECEIVER_EMAIL,
+#                 'amount': order.get_total_harga_order,
+#                 'item_name': f'Pembayaran belajanan order: {order.id}',
+#                 'invoice': f'{order.id}-{timezone.now().timestamp()}' ,
+#                 'currency_code': 'USD',
+#                 'notify_url': self.request.build_absolute_uri(reverse('paypal-ipn')),
+#                 'return_url': self.request.build_absolute_uri(reverse('toko:paypal-return')),
+#                 'cancel_return': self.request.build_absolute_uri(reverse('toko:paypal-cancel')),
+#             }
         
-            qPath = self.request.get_full_path()
-            isPaypal = 'paypal' in qPath
+#             qPath = self.request.get_full_path()
+#             isPaypal = 'paypal' in qPath
         
-            form = PayPalPaymentsForm(initial=paypal_data)
-            context = {
-                'paypalform': form,
-                'order': order,
-                'is_paypal': isPaypal,
-            }
-            return render(self.request, template_name, context)
+#             form = PayPalPaymentsForm(initial=paypal_data)
+#             context = {
+#                 'paypalform': form,
+#                 'order': order,
+#                 'is_paypal': isPaypal,
+#             }
+#             return render(self.request, template_name, context)
 
         except ObjectDoesNotExist:
             return redirect('toko:checkout')

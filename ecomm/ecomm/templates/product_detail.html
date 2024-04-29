@@ -31,19 +31,25 @@
                         </a>
                         {% else %}
                         <a href="">
-                            <span class="badge bg-{{ object.get_label_display }} me-1">Bestseller</span>
+                            <span class="badge bg-{{ object.get_label_display }} me-1">Best Seller</span>
                         </a>
                         {% endif %}
                     </div>
-
+                    
+                <!--Grid row-->
+                    <div class="mb-3">
+                        <h3 class="my-4 h3">{{ object.nama_produk }}</h3>
+                    </div>
+                <!--Grid row-->
+                    
                     <p class="lead">
                         {% if object.harga_diskon %}
                         <span class="me-1">
-                            <del>${{ object.harga }}</del>
+                            <del>Rp {{ object.harga }}</del>
                         </span>
-                        <span>${{ object.harga_diskon }}</span>
+                        <span>Rp {{ object.harga_diskon }}</span>
                         {% else %}
-                        <span>${{ object.harga }}</span>
+                        <span>Rp {{ object.harga }}</span>
                         {% endif %}
                     </p>
 
@@ -70,10 +76,12 @@
         <!--Grid row-->
         <div class="row d-flex justify-content-center">
             <!--Grid column-->
-            <div class="col-md-6 text-center">
-                <h4 class="my-4 h4">Additional information</h4>
+            <div class="col-md-12 text-left">
+                <h4 class="my-4 h4">Belanja Online Terpercaya di MDB</h4>
 
-                <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Natus suscipit modi sapiente illo soluta odit voluptates, quibusdam officia. Neque quibusdam quas a quis porro? Molestias illo neque eum in laborum.</p>
+                <p>Temukan apapun kebutuhan fashionmu dengan harga terbaik cuma di MDB. MDB adalah pusat perbelanjaan fashion online di mana kamu bisa menemukan berbagai outfit terkece dan terupdate masa ini. Berbelanja menjadi lebih mudah dan menyenangkan.
+                    <br>
+                    Belanja semua kebutuhanmu di MDB dengan hati yang tenang! Temukan barang kebutuhan dengan mudah. Kami selalu mengutamakan keamanan transaksi untuk para pembeli kami! </p>
             </div>
             <!--Grid column-->
         </div>
@@ -82,20 +90,20 @@
         <!--Grid row-->
         <div class="row">
             <!--Grid column-->
-            <div class="col-lg-4 col-md-12 mb-4">
-                <img src="https://mdbootstrap.com/img/Photos/Horizontal/E-commerce/Products/11.jpg" class="img-fluid" alt="" />
+            <div class="col-lg-2 col-md-12 mb-4">
+                <img src="https://storage.googleapis.com/storage-ajaib-prd-platform-wp-artifact/2020/03/apa-itu-paypal.jpg" class="img-fluid" alt="" />
             </div>
             <!--Grid column-->
 
             <!--Grid column-->
-            <div class="col-lg-4 col-md-6 mb-4">
-                <img src="https://mdbootstrap.com/img/Photos/Horizontal/E-commerce/Products/12.jpg" class="img-fluid" alt="" />
+            <div class="col-lg-2 col-md-6 mb-4">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/Stripe_Logo%2C_revised_2016.svg/2560px-Stripe_Logo%2C_revised_2016.svg.png" class="img-fluid" alt="" />
             </div>
             <!--Grid column-->
 
             <!--Grid column-->
-            <div class="col-lg-4 col-md-6 mb-4">
-                <img src="https://mdbootstrap.com/img/Photos/Horizontal/E-commerce/Products/13.jpg" class="img-fluid" alt="" />
+            <div class="col-lg-2 col-md-6 mb-4">
+                <img src="https://png.pngtree.com/png-vector/20220521/ourmid/pngtree-100-secure-grunge-vector-icon-png-image_4668154.png" class="img-fluid" alt="" />
             </div>
             <!--Grid column-->
         </div>

@@ -99,23 +99,24 @@ WSGI_APPLICATION = 'ecomm.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
-
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'anton_db',
-        'USER': 'postgres',
-        'PASSWORD': '',
-        'HOST': 'localhost',
-        'PORT': '5432',
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
+# silvi gak pake ganti postgre ke sqlite 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql_psycopg2',
+#         'NAME': 'anton_db',
+#         'USER': 'postgres',
+#         'PASSWORD': '',
+#         'HOST': 'localhost',
+#         'PORT': '5432',
+#     }
+# }
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
@@ -138,12 +139,12 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
-PAYPAL_CLIENT_ID = env('PAYPAL_SANDBOX_CLIENT_ID')
-PAYPAL_SECRET_ID = env('PAYPAL_SANDBOX_SECRET_KEY')
+# PAYPAL_CLIENT_ID = env('PAYPAL_SANDBOX_CLIENT_ID')
+# PAYPAL_SECRET_ID = env('PAYPAL_SANDBOX_SECRET_KEY')
 
-PAYPAL_RECEIVER_EMAIL = env('PAYPAL_RECEIVER_EMAIL')
-PAYPAL_TEST = env('PAYPAL_TEST', default=False, cast=bool)
-CORS_ORIGIN_ALLOW_ALL = True
+# PAYPAL_RECEIVER_EMAIL = env('PAYPAL_RECEIVER_EMAIL')
+# PAYPAL_TEST = env('PAYPAL_TEST', default=False, cast=bool)
+# CORS_ORIGIN_ALLOW_ALL = True
 
 
 DEFAULT_FROM_EMAIL= env('DEFAULT_FROM_EMAIL')
@@ -195,10 +196,22 @@ if DEBUG is False:
 
     ALLOWED_HOSTS = ['www.domain-kita.com']
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    
+    # gak silvi pake, ganti postgre ke sqlite3
+    # DATABASES = {
+    #     'default': {
+    #         'ENGINE': 'django.db.backends.postgresql_psycopg2',
+    #         'NAME': 'db_name',
+    #         'USER': 'db_user',
+    #         'PASSWORD': 'db_password',
+    #         'HOST': 'www.domain-kita.com',
+    #         'PORT': '5432',
+    #     }
+    # }
 
     DATABASES = {
         'default': {
-            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            'ENGINE': 'django.db.backends.sqlite3',
             'NAME': 'db_name',
             'USER': 'db_user',
             'PASSWORD': 'db_password',
@@ -207,7 +220,7 @@ if DEBUG is False:
         }
     }
 
-    PAYPAL_CLIENT_ID = env('PAYPAL_LIVE_CLIENT_ID')
-    PAYPAL_SECRET_ID = env('PAYPAL_LIVE_SECRET_ID')
-    PAYPAL_TEST=False
-    PAYPAL_RECEIVER_EMAIL = env('PAYPAL_RECEIVER_EMAIL')
+    # PAYPAL_CLIENT_ID = env('PAYPAL_LIVE_CLIENT_ID')
+    # PAYPAL_SECRET_ID = env('PAYPAL_LIVE_SECRET_ID')
+    # PAYPAL_TEST=False
+    # PAYPAL_RECEIVER_EMAIL = env('PAYPAL_RECEIVER_EMAIL')
